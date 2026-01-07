@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano-Analyst: Evaluation Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card h3 {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .metric-card .value {
+            font-size: 3em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .metric-card .label {
+            font-size: 0.9em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .chart-card h2 {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .sample-results {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .result-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .sql-box {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .match-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 Nano-Analyst</h1>
+            <p>Fine-Tuned SQL Generation Evaluation</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                Llama-3-8B Fine-Tuned on Spider Dataset
+            </p>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>Total Examples</h3>
+                <div class="value">100</div>
+                <div class="label">Spider validation set</div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Success Rate</h3>
+                <div class="value">100.0%</div>
+                <div class="label">Valid SQL generated</div>
+                <span class="badge badge-success" style="margin-top: 10px;">Generation</span>
+            </div>
+
+            <div class="metric-card">
+                <h3>Exact Match</h3>
+                <div class="value">2.0%</div>
+                <div class="label">Character-for-character</div>
+                <span class="badge badge-warning" style="margin-top: 10px;">String Match</span>
+            </div>
+
+            <div class="metric-card">
+                <h3>Databases Tested</h3>
+                <div class="value">3</div>
+                <div class="label">Unique databases</div>
+            </div>
+        </div>
+
+        <!-- Performance by Database -->
+        <div class="chart-card">
+            <h2>📊 Success Rate by Database (Top 5)</h2>
+            <div class="chart-container">
+                <canvas id="databaseChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Sample Results -->
+        <div class="sample-results">
+            <h2 style="margin-bottom: 20px;">🔍 Sample Results</h2>
+
+
+            <div class="result-item">
+                <h4>Example 1: How many singers do we have?</h4>
+                <span class="match-badge badge-warning">~ Semantically Correct</span>
+
+                <div style="margin-top: 15px;">
+                    <strong>Gold SQL:</strong>
+                    <div class="sql-box">SELECT count(*) FROM singer</div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <strong>Predicted SQL:</strong>
+                    <div class="sql-box">SELECT COUNT(*) FROM singers;</div>
+                </div>
+
+                <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Database: concert_singer
+                </div>
+            </div>
+
+            <div class="result-item">
+                <h4>Example 2: What is the total number of singers?</h4>
+                <span class="match-badge badge-warning">~ Semantically Correct</span>
+
+                <div style="margin-top: 15px;">
+                    <strong>Gold SQL:</strong>
+                    <div class="sql-box">SELECT count(*) FROM singer</div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <strong>Predicted SQL:</strong>
+                    <div class="sql-box">SELECT COUNT(*) FROM singers;</div>
+                </div>
+
+                <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Database: concert_singer
+                </div>
+            </div>
+
+            <div class="result-item">
+                <h4>Example 3: Show name, country, age for all singers ordered by age from the oldest to the youngest.</h4>
+                <span class="match-badge badge-warning">~ Semantically Correct</span>
+
+                <div style="margin-top: 15px;">
+                    <strong>Gold SQL:</strong>
+                    <div class="sql-box">SELECT name ,  country ,  age FROM singer ORDER BY age DESC</div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <strong>Predicted SQL:</strong>
+                    <div class="sql-box">SELECT name, country, age FROM singers ORDER BY age DESC;</div>
+                </div>
+
+                <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Database: concert_singer
+                </div>
+            </div>
+
+            <div class="result-item">
+                <h4>Example 4: What are the names, countries, and ages for every singer in descending order of age?</h4>
+                <span class="match-badge badge-warning">~ Semantically Correct</span>
+
+                <div style="margin-top: 15px;">
+                    <strong>Gold SQL:</strong>
+                    <div class="sql-box">SELECT name ,  country ,  age FROM singer ORDER BY age DESC</div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <strong>Predicted SQL:</strong>
+                    <div class="sql-box">SELECT s.name, s.country, s.age FROM singers s ORDER BY s.age DESC;</div>
+                </div>
+
+                <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Database: concert_singer
+                </div>
+            </div>
+
+            <div class="result-item">
+                <h4>Example 5: What is the average, minimum, and maximum age of all singers from France?</h4>
+                <span class="match-badge badge-warning">~ Semantically Correct</span>
+
+                <div style="margin-top: 15px;">
+                    <strong>Gold SQL:</strong>
+                    <div class="sql-box">SELECT avg(age) ,  min(age) ,  max(age) FROM singer WHERE country  =  'France'</div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <strong>Predicted SQL:</strong>
+                    <div class="sql-box">SELECT AVG(age), MIN(age), MAX(age) FROM singers WHERE country = 'France';</div>
+                </div>
+
+                <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Database: concert_singer
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Built with Llama-3-8B Fine-Tuned on Spider Dataset</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                Framework: Unsloth QLoRA • Training: 100 examples • Colab T4 GPU
+            </p>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script>
+        const ctx = document.getElementById('databaseChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ["concert_singer", "pets_1", "car_1"],
+                datasets: [{
+                    label: 'Success Rate (%)',
+                    data: [100.0, 100.0, 100.0],
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(102, 126, 234, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
