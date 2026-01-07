@@ -13,13 +13,9 @@ datasets>=2.14.0
 pandas>=2.0.0
 numpy>=1.24.0
 
-# RAG and Vector Database (for SQL Agent - Step 3)
+# RAG and Vector Database
 chromadb>=0.4.0
 sentence-transformers>=2.2.0
-
-# Agents and Workflows (for SQL Agent - Step 3)
-langgraph>=0.0.20
-langchain>=0.1.0
 
 # Database
 sqlite3  # Built-in with Python

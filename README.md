@@ -57,15 +57,17 @@ For databases with 100+ tables, retrieving the full schema exceeds context limit
 - Embeddings: sentence-transformers/all-MiniLM-L6-v2
 - Retrieval: Top-3 tables by semantic similarity
 
-### 3. Agentic Execution
+### 3. Agentic Self-Correction
 
-The model generates SQL, attempts execution, and iteratively self-corrects based on error messages. This pattern recovers from syntax errors, type mismatches, and incorrect column references.
+The model generates SQL, attempts execution, and iteratively self-corrects based on error messages. Implemented as a custom Python agent class with retry logic.
 
 **Workflow:**
 1. Generate SQL from question + schema
 2. Execute against local SQLite database
-3. On error: feed traceback into next generation attempt
+3. On error: inject error message into next generation attempt
 4. Repeat up to 3 times or until success
+
+**Implementation:** Custom `SQLAgent` class with state management and error handling (no external agent frameworks)
 
 ---
 
@@ -255,7 +257,7 @@ Initial SQL generation accuracy is ~75%. The self-correction loop attempts execu
 | Base Model | Llama-3-8B-Instruct (Meta) |
 | Fine-Tuning | QLoRA via Unsloth |
 | Vector Database | ChromaDB |
-| Agent Framework | LangGraph |
+| Agent Implementation | Custom Python classes |
 | Training Platform | Google Colab (T4 GPU) |
 | Deployment | HuggingFace Hub |
 
